@@ -3,62 +3,61 @@
 <head>
 <title>Form Validation</title>
 <script>
-// Function to validate the form before submission
 function validate(form) {
-    let fail = ""; // Initialize the error message
-    fail += validateInput(form.field.value, form.file.value); // Check if input conditions are met
-    if (fail === "") { // If no errors
-        return true; // Allow form submission
-    } else { // If errors exist
-        alert(fail); // Show the error message
-        return false; // Prevent form submission
+    let fail = "";
+    fail += validateInput(form.field.value, form.file.value);
+    if (fail === "") {
+        return true;
+    } else {
+        alert(fail);
+        return false;
     }
 }
 
-// Function to check if at least one input (text or file) is provided
 function validateInput(field, file) {
-    if (field === "" && (!file || file === "")) { // If both text and file are empty
-        return "Must have either a text input or a file uploaded.\n"; // Return error message
+    if (field === "" && (!file || file === "")) {
+        return "Must have either a text input or a file uploaded.\n";
     }
-    return ""; // Return no error
+    return "";
 }
 </script>
 </head>
 
+
 <?php
 // Aung Paing Soe and Yeng Her
 // 12.8.24
-// CS174 Final Decryption
+// CS174 Final Decryptiod
 
 // Miscellaneous setup
 require_once 'init.php';
 
-// Function to destroy the session and its data
+// Funct to destroy session
 function destroy_session_and_data(){
-    $_SESSION = []; // Clear session data
-    setcookie(session_name(), "", time()-MONTH, '/'); // Expire the session cookie
-    session_destroy(); // End the session
+    $_SESSION = []; 
+    setcookie(session_name(), "", time()-MONTH, '/');
+    session_destroy();
 }
 
-// Open connection to the database
+// Open connection to database
 try {
-    $conn = new mysqli($hn, $un, $pw, $db); // Establish connection using credentials
+    $conn = new mysqli($hn, $un, $pw, $db);
 } catch (Exception $e) {
-    die(ERROR_MESSAGE); // Handle connection errors
+    die(ERROR_MESSAGE);
 }
 
-// Ensure unauthorized users cannot access the page directly
+// Makes sure someone can't skip to home page
 if (!isset($_SESSION["auth"])){   
-    destroy_session_and_data(); // Clear session data
-    session_regenerate_id(); // Generate a new session ID for security
-    header("Location: registration.php"); // Redirect to the registration page
-    die(); // Stop further script execution
+    // Redirect to the registration page
+    destroy_session_and_data();
+    session_regenerate_id();
+    header("Location: registration.php");
+    die();
 }
 
-// Display welcome message and instructions
 echo "Welcome! Please submit a '.txt' file or type in the text box. <br>Please only do one at a time, if you choose to do both, the file will have priority";
 
-// HTML form for input submission and encryption/decryption
+// Form to read input and en/decrypt
 echo <<<_END
 <form method="post" action="home.php" enctype="multipart/form-data" onsubmit="return validate(this)">
     <pre>
@@ -77,47 +76,71 @@ echo <<<_END
 </form>
 _END;
 
-$action = isset($_POST['action']) ? mysql_entities_fix_string($conn, $_POST['action']) : ''; // Get the action (Encrypt/Decrypt)
+$action = isset($_POST['action']) ? mysql_entities_fix_string($conn, $_POST['action']) : '';
 
-// Handle encryption logic
 if ($action === "Encrypt") {
-    $cipher = mysql_entities_fix_string($conn, $_POST['cipher']); // Get the cipher type
+    $cipher = mysql_entities_fix_string($conn, $_POST['cipher']);
+    $key = mysql_entities_fix_string($conn, $_POST['key']);
+
     echo "Encrypting with cipher: $cipher<br>";
 
-    if (isset($_POST['file'])) { // If a file is uploaded
+    if (isset($_POST['file'])) {
         $content = mysql_entities_fix_string($conn, $_FILES['field']);
-        if (mysql_entities_fix_string($conn, $_FILES['filename']['type']) == 'text/plain') { // Check file type
-            $fileName = mysql_entities_fix_string($conn, $_FILES['filename']['tmp_name']); // Get temporary file name
+        if (mysql_entities_fix_string($conn, $_FILES['filename']['type']) == 'text/plain') {
+            $fileName = mysql_entities_fix_string($conn, $_FILES['filename']['tmp_name']);
         }else{
-            die("File must be type .txt!"); // Reject non-txt files
+            die ("File must be type .txt!");
         }
 
-        if (!is_uploaded_file($fileName)) { // Check if file was successfully uploaded
-            die("Error uploading the file. Please try again."); // Handle upload errors
+        if (!is_uploaded_file($fileName)) {
+            die("Error uploading the file. Please try again.");
         }else{
-            $fileContent = mysql_entities_fix_string($conn, file_get_contents($fileName)); // Read file contents
-            $content = preg_replace('/\r\n|\r|\n/', '<br>', html_entity_decode($fileContent)); // Clean and format file content
+            $fileContent = mysql_entities_fix_string($conn, file_get_contents($fileName));
+            $content = preg_replace('/\r\n|\r|\n/', '<br>', html_entity_decode($fileContent));    
         }
-        Encrypt($content, $cipher, $conn); // Encrypt the content
+        Encrypt($content, $cipher, $conn, $key);
     }
 
-    else if (isset($_POST['field']) && isset($_POST['cipher'])) { // If text is provided
-        $content = mysql_entities_fix_string($conn, $_POST['field']); // Get the text content
-        Encrypt($content, $cipher, $conn); // Encrypt the text
+    else if (isset($_POST['field']) && isset($_POST['cipher'])) {
+        $content = mysql_entities_fix_string($conn, $_POST['field']);
+        Encrypt($content, $cipher, $conn, $key);
     }
 }
 
-// Handle decryption logic
 else if ($action === "Decrypt") {
+    $cipher = mysql_entities_fix_string($conn, $_POST['cipher']);
+    $key = mysql_entities_fix_string($conn, $_POST['key']);
+
     echo "Decrypting with cipher: $cipher<br>";
-    // Perform decryption logic here
-} elseif (isset($_POST['key'])) { // If an invalid action is detected
+
+    if (isset($_POST['file'])) {
+        $content = mysql_entities_fix_string($conn, $_FILES['field']);
+        if (mysql_entities_fix_string($conn, $_FILES['filename']['type']) == 'text/plain') {
+            $fileName = mysql_entities_fix_string($conn, $_FILES['filename']['tmp_name']);
+        }else{
+            die ("File must be type .txt!");
+        }
+
+        if (!is_uploaded_file($fileName)) {
+            die("Error uploading the file. Please try again.");
+        }else{
+            $fileContent = mysql_entities_fix_string($conn, file_get_contents($fileName));
+            $content = preg_replace('/\r\n|\r|\n/', '<br>', html_entity_decode($fileContent));    
+        }
+        Decrypt($content, $cipher, $conn, $key);
+    }
+
+    else if (isset($_POST['field']) && isset($_POST['cipher'])) {
+        $content = mysql_entities_fix_string($conn, $_POST['field']);
+        Decrypt($content, $cipher, $conn, $key);
+    }
+} elseif (isset($_POST['key'])) {
     echo "Invalid action.<br>";
 }
 
-$conn->close(); // Close the database connection
+$conn->close();
 
-// Log-out button
+// Button to log out
 echo <<<_END
         <form method="post" action="home.php" enctype="multipart/form-data">
                 <input type="hidden" name="loginState" value="0"> <!-- Hidden input to maintain state -->
@@ -125,47 +148,82 @@ echo <<<_END
             </form>
         _END;
 
-// Handle log-out logic
+// Check if the log out button was clicked
 if (isset($_POST['logOut'])) {
-    destroy_session_and_data(); // Clear session data
-    session_regenerate_id(); // Generate a new session ID
-    header("Location: registration.php"); // Redirect to the registration page
-    exit(); // Stop further script execution
+    // Redirect to the registration page
+    destroy_session_and_data();
+    session_regenerate_id();
+    header("Location: registration.php");
+    exit();
 }
 
-// Function to perform encryption and log to the database
-Function Encrypt($content, $cipher, $conn){
+Function Encrypt($content, $cipher, $conn, $key){
     $time = date('Y-m-d H:i:s'); // Current timestamp
 
-    if ($cipher == "Simple Substitution"){ // Handle Simple Substitution encryption
-        simpleSubstitution();
-    } else if ($cipher == "Double Transposition"){ // Handle Double Transposition encryption
-        doubleTransposition();
-    } else if ($cipher == "RC4"){ // Handle RC4 encryption
-        RC4();
+    if ($cipher == "Simple Substitution"){
+        simpleSubstitution($key);
+    } else if ($cipher == "Double Transposition"){
+        doubleTransposition($key);
+    } else if ($cipher == "RC4"){
+        RC4($key);
     }else{
-        die(ERROR_MESSAGE); // Handle invalid cipher
+        die(ERROR_MESSAGE);
     }
 
     try {
-        // Save the encryption details to the database
-        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $time, $content, $cipher);
+        // Insert the time, input, and cipher into the database
+        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, key) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $time, $content, $cipher, $key);
         $stmt->execute();
         echo "Data saved successfully!<br>";
     } catch (Exception $e) {
-        die(ERROR_MESSAGE); // Handle database errors
+        die(ERROR_MESSAGE);
     }
 }
 
-// Placeholder functions for encryption/decryption methods
-Function simpleSubstitution(){
-    // Logic for Simple Substitution
+Function Decrypt($content, $cipher, $conn, $key){
+    $time = date('Y-m-d H:i:s'); // Current timestamp
+
+    if ($cipher == "Simple Substitution"){
+        simpleSubstitutionDecrypt($key);
+    } else if ($cipher == "Double Transposition"){
+        doubleTranspositionDecrypt($key);
+    } else if ($cipher == "RC4"){
+        RC4Decrypt($key);
+    }else{
+        die(ERROR_MESSAGE);
+    }
+
+    try {
+        // Insert the time, input, and cipher into the database
+        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, key) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $time, $content, $cipher, $key);
+        $stmt->execute();
+        echo "Data saved successfully!<br>";
+    } catch (Exception $e) {
+        die(ERROR_MESSAGE);
+    }
 }
-Function doubleTransposition(){
-    // Logic for Double Transposition
+
+//Functions for en/decryption:
+Function simpleSubstitution($key){
+
 }
-Function RC4(){
-    // Logic for RC4
+Function doubleTransposition($key){
+    
 }
+Function RC4($key){
+    
+}
+
+Function simpleSubstitutionDecrypt($key){
+
+}
+Function doubleTranspositionDecrypt($key){
+    
+}
+Function RC4Decrypt($key){
+    
+}
+
 ?>

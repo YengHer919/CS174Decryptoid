@@ -3,74 +3,64 @@
 <head>
 <title>Form Validation</title>
 <script>
-    // Function to validate the form inputs on submission
-    function validate(form) {
-        let fail = "";
-        fail += validateUsername(form.user.value); // Validate the username field
-        fail += validateID(form.id.value); // Validate the ID field
-        fail += validateEmail(form.email.value); // Validate the email field
-        fail += validatePassword(form.passwd.value); // Validate the password field
-        if (fail == "") return true; // Proceed if no validation errors
-        else { alert(fail); return false; } // Alert the errors and prevent form submission
-    }
-
-    // Shortcut function to get an element by its ID
-    function $(id) {
-        return document.getElementById(id);
-    }
-
-    // Validate the username for specific character constraints
-    function validateUsername(field){
-        if (field == "") return "No Username was entered.\n";
-        else if (/[^a-zA-Z0-9_-]/.test(field)) // Allow only alphanumeric characters, hyphens, and underscores
-            return "Only a-z, A-Z, 0-9, - and _ allowed in Usernames.\n";
-        return "";
-    }
-
-    // Validate the ID for numeric input and length
-    function validateID(field){
-        if (field == "") return "No ID was entered.\n";
-        else if (field.length != 9) // Require exactly 9 characters
-            return "ID's must be 9 characters.\n";
-        else if (/[^0-9]/.test(field)) // Allow only numeric characters
-            return "0-9 allowed in ID's.\n";
-        return "";
-    }
-
-    // Validate the email for proper formatting
-    function validateEmail(field) {
-        if (field == "") 
-            return "No Email was entered.\n";
-        else if (!field.endsWith(".edu") && !field.endsWith(".com") && !field.endsWith(".org") && !field.endsWith(".gov") || !field.includes("@")) 
-            return "Email must be properly formatted.\n"; // Ensure correct domain and @ symbol
-        else if (/[^a-zA-Z0-9._@-]/.test(field)) // Allow only valid characters
-            return "Invalid characters in Email.\n";
-        else if (field.length < 10) 
-            return "Email can't be empty.\n"; // Prevent submitting domain-only emails
-        return "";
-    }
-
-    // Validate the password for complexity
-    function validatePassword(field) {
-        if (field == "") return "No Password was entered.\n";
-        else if (field.length < 6) // Ensure a minimum length of 6
-            return "Passwords must be at least 6 characters.\n";
-        else if (!/[a-z]/.test(field) || !/[A-Z]/.test(field) || !/[0-9]/.test(field)) 
-            return "Passwords require at least one lowercase and uppercase letter and at least one number.\n"; // Enforce complexity requirements
-        return "";
-    }
+function validate(form) {
+    let fail = "";
+    fail += validateUsername(form.user.value);
+    fail += validateID(form.id.value);
+    fail += validateEmail(form.email.value);
+    fail += validatePassword(form.passwd.value);
+    if (fail == "") return true;
+    else { alert(fail); return false; }
+}
+function $(id) {
+    return document.getElementById(id);
+}
+function validateUsername(field){
+    if (field == "") return "No Username was entered.\n"
+    else if (/[^a-zA-Z0-9_-]/.test(field))
+        return "Only a-z, A-Z, 0-9, - and _ allowed in Usernames.\n"
+    return ""
+}
+function validateID(field){
+    if (field == "") return "No ID was entered.\n"
+    else if (field.length != 9) // no ID's shorter than 9
+        return "ID's must be 9 characters.\n"
+    else if (/[^0-9]/.test(field))
+        return "0-9 allowed in ID's.\n"
+    return ""
+}
+function validateEmail(field) {
+    if (field == "") 
+        return "No Email was entered.\n";
+    else if (!field.endsWith(".edu") || !field.endsWith(".com") || !field.endsWith(".org") || !field.endsWith(".gov") || !field.includes("@")) // Check for the correct domain
+        return "Email must be properly formatted.\n";
+    else if (/[^a-zA-Z0-9._@-]/.test(field))
+        return "Invalid characters in Email.\n";
+     else if (field.length < 10) // ensure user can't submit "@sjsu.edu" by itself
+        return "Email can't be empty.\n"
+    return "";
+}
+function validatePassword(field)
+{
+if (field == "") return "No Password was entered.\n"
+else if (field.length < 6) // no passwords shorter than 6
+return "Passwords must be at least 6 characters.\n"
+else if (!/[a-z]/.test(field) || ! /[A-Z]/.test(field) ||!/[0-9]/.test(field))
+return "Passwords require at least one lowercase and uppercase letter and at least one number.\n"
+return ""
+}
 </script>
 </head>
 
 <?php
 // Aung Paing Soe and Yeng Her
 // 12.8.24
-// Final Decryptiod - PHP file for user login and registration
+// Final Decryptiod
 
-// Include initialization settings
+// Miscellaneous setup
 require_once 'init.php';
 
-// HTML form for user login
+// HTML to log in
 echo "Log in";
 echo <<<_END
         <form method="post" action="registration.php" enctype="multipart/form-data"><pre>
@@ -80,50 +70,59 @@ echo <<<_END
         </pre></form>
         _END;
 
-// Process login if username and password are submitted
+// If the username and password are input
 if (isset($_POST['username']) && isset($_POST['password'])) {
+    // Open connection to database
     try {
-        $conn = new mysqli($hn, $un, $pw, $db); // Open database connection
+        $conn = new mysqli($hn, $un, $pw, $db);
     } catch (Exception $e) {
-        die(ERROR_MESSAGE); // Handle connection error
+        die(ERROR_MESSAGE);
     }
 
-    // Sanitize inputs for security
+    // Set variables to sanitized inputs
     $un_temp = mysql_entities_fix_string($conn, $_POST['username']);
     $pw_temp = mysql_entities_fix_string($conn, $_POST['password']);
 
+   // Check to find user in database 
     try {
-        // Query database for user credentials
         $stmt = $conn->prepare("SELECT * FROM credentials WHERE name = ?");
         $stmt->bind_param("s", $un_temp);
         $stmt->execute();
         $result = $stmt->get_result();
     } catch (Exception $e) {
-        die(ERROR_MESSAGE); // Handle query error
+        die(ERROR_MESSAGE);
     }
     
+    // If user exsists
     if ($result->num_rows) {
         $row = $result->fetch_array(MYSQLI_NUM);
-        $salt1 = $row[4]; $salt2 = $row[5]; // Retrieve salts
-        $token = hash('ripemd128', "$salt1$pw_temp$salt2"); // Generate hashed password
-        if ($token == $row[3]) { // Match password
-            $_SESSION['auth'] = 1; // Set session authentication
-            header("Location: home.php"); // Redirect to home
+        $salt1 = $row[4]; $salt2 = $row[5];
+        // Verify Password
+        $token = hash('ripemd128', "$salt1$pw_temp$salt2");
+        if ($token == $row[3]) { // If passwords match, store all data into session
+            $_SESSION['auth'] = 1;
+            echo "successful log in";
+            //session_regenerate_id();
+            header("Location: home.php");
             exit();
-        } else { 
-            echo "Invalid username/password combination.<br>";
-        }
-    } else {
-        echo "User does not exist.<br>";
+        // If user exsists and password is wrong, let the user know
+        }else{ echo("Invalid username/password combination <br>"); echo "__________________________________________________________<br><br>";}
+    // If the user doesn't exsist, let the user know
+    }else{
+        echo ("User does not exsist");
+        echo "__________________________________________________________<br><br>";
     }
     $result->close();
     $stmt->close();
-    $conn->close();
-} else {
-    echo "Please enter your user name and password.<br>";
+    $conn -> close();
+// If the fields aren't full, page will ask user to do so
+}else{
+    echo "Please enter your user name and password <br>";
+    echo "__________________________________________________________<br><br>";
 }
 
-// Form for user registration
+
+// Form to register
 echo "Sign up";
 echo <<<_END
         <form method="post" action="registration.php" enctype="multipart/form-data" onsubmit="return validate(this)"><pre>
@@ -135,7 +134,7 @@ echo <<<_END
         </pre></form>
         _END;
 
-// Check if salts are unique
+// Check to make sure salts are unique
 function saltVerified($conn, $s1, $s2){
     try {
         $stmt = $conn->prepare("SELECT * FROM credentials WHERE salt1 = ?");
@@ -146,7 +145,9 @@ function saltVerified($conn, $s1, $s2){
         die(ERROR_MESSAGE);
     }
 
-    if ($result->num_rows) return false; // Salt1 already exists
+    if ($result->num_rows) {
+        return false;    
+    }
     $result->close();
     $stmt->close(); 
 
@@ -159,55 +160,62 @@ function saltVerified($conn, $s1, $s2){
         die(ERROR_MESSAGE);
     }
     
-    if ($result->num_rows) return false; // Salt2 already exists
+    if ($result->num_rows) {
+        return false;    
+    }
     $result->close();
     $stmt->close(); 
     
-    return true; // Both salts are unique
+    return true;
 }
 
-// Handle user registration
+// Check if all fields have been entered
 if (isset($_POST['user']) && isset($_POST['id']) && isset($_POST['email']) && isset($_POST['passwd'])) {
+    // Open connection to database
     try {
-        $conn = new mysqli($hn, $un, $pw, $db); // Open database connection
+        $conn = new mysqli($hn, $un, $pw, $db);
     } catch (Exception $e) {
-        die(ERROR_MESSAGE); // Handle connection error
+        die(ERROR_MESSAGE);
     }
     
-    // Get sanitized user input
+    // Get info from fields
     $userName = mysql_entities_fix_string($conn, $_POST['user']);
     $id = mysql_entities_fix_string($conn, $_POST['id']);
     $email = mysql_entities_fix_string($conn, $_POST['email']);
     $password =  mysql_entities_fix_string($conn, $_POST['passwd']);
 
-    // Generate random salts
-    $salt1 = bin2hex(random_bytes(random_int(1, 8))); 
-    $salt2 = bin2hex(random_bytes(random_int(1, 8)));
-    $attempts = 0;
-
-    // Ensure salts are unique
+    // Salt generation
+    $randomNumber1 = random_int(1, 8);
+    $randomNumber2 = random_int(1, 8);
+    $salt1 = bin2hex(random_bytes($randomNumber1)); 
+    $salt2 = bin2hex(random_bytes($randomNumber2));
+    // attempts to stop inf loops
+    $attempts = 0; 
     while(!saltVerified($conn, $salt1, $salt2)){
-        $salt1 = bin2hex(random_bytes(random_int(1, 8))); 
-        $salt2 = bin2hex(random_bytes(random_int(1, 8)));
+        $randomNumber1 = random_int(1, 8);
+        $randomNumber2 = random_int(1, 8);
+        $salt1 = bin2hex(random_bytes($randomNumber1)); 
+        $salt2 = bin2hex(random_bytes($randomNumber2));
         $attempts++;
         if ($attempts >= 10) die("Failed to generate unique salts.");
     }
+    $hashPass = hash('ripemd128', "$salt1$password$salt2");
+    // Prepare to insert the new user into the database
+    $stmt = $conn->prepare("INSERT INTO credentials (name, id, email, password, salt1, salt2) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("sissss", $userName, $id, $email, $hashPass, $salt1, $salt2);
 
-    $hashPass = hash('ripemd128', "$salt1$password$salt2"); // Hash password with salts
-
-    // Insert new user into the database
-    try {
-        $stmt = $conn->prepare("INSERT INTO credentials (name, id, email, password, salt1, salt2) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sissss", $userName, $id, $email, $hashPass, $salt1, $salt2);
+    // Execute the statement and check for success
+    try{
         $stmt->execute();
-        echo "User registered successfully! Please log in.<br>";
+        echo "User registered successfully! Please log in <br>";
     } catch (Exception $e) {
-        die(ERROR_MESSAGE); // Handle insertion error
-    }
+        die(ERRORMESSAGE);
+    }    
     $stmt->close(); 
-    $conn->close();
-} else {
-    echo "Please enter all required fields.<br>";
+    $conn -> close(); 
+}else{
+    echo "Please enter your user name and password";
 }
 
 ?>
+
