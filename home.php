@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -81,6 +80,8 @@ $action = isset($_POST['action']) ? mysql_entities_fix_string($conn, $_POST['act
 
 if ($action === "Encrypt") {
     $cipher = mysql_entities_fix_string($conn, $_POST['cipher']);
+    $key = mysql_entities_fix_string($conn, $_POST['key']);
+
     echo "Encrypting with cipher: $cipher<br>";
 
     if (isset($_POST['file'])) {
@@ -97,18 +98,42 @@ if ($action === "Encrypt") {
             $fileContent = mysql_entities_fix_string($conn, file_get_contents($fileName));
             $content = preg_replace('/\r\n|\r|\n/', '<br>', html_entity_decode($fileContent));    
         }
-        Encrypt($content, $cipher, $conn);
+        Encrypt($content, $cipher, $conn, $key);
     }
 
     else if (isset($_POST['field']) && isset($_POST['cipher'])) {
         $content = mysql_entities_fix_string($conn, $_POST['field']);
-        Encrypt($content, $cipher, $conn);
+        Encrypt($content, $cipher, $conn, $key);
     }
 }
 
 else if ($action === "Decrypt") {
+    $cipher = mysql_entities_fix_string($conn, $_POST['cipher']);
+    $key = mysql_entities_fix_string($conn, $_POST['key']);
+
     echo "Decrypting with cipher: $cipher<br>";
-    // Perform decryption logic here
+
+    if (isset($_POST['file'])) {
+        $content = mysql_entities_fix_string($conn, $_FILES['field']);
+        if (mysql_entities_fix_string($conn, $_FILES['filename']['type']) == 'text/plain') {
+            $fileName = mysql_entities_fix_string($conn, $_FILES['filename']['tmp_name']);
+        }else{
+            die ("File must be type .txt!");
+        }
+
+        if (!is_uploaded_file($fileName)) {
+            die("Error uploading the file. Please try again.");
+        }else{
+            $fileContent = mysql_entities_fix_string($conn, file_get_contents($fileName));
+            $content = preg_replace('/\r\n|\r|\n/', '<br>', html_entity_decode($fileContent));    
+        }
+        Decrypt($content, $cipher, $conn, $key);
+    }
+
+    else if (isset($_POST['field']) && isset($_POST['cipher'])) {
+        $content = mysql_entities_fix_string($conn, $_POST['field']);
+        Decrypt($content, $cipher, $conn, $key);
+    }
 } elseif (isset($_POST['key'])) {
     echo "Invalid action.<br>";
 }
@@ -132,23 +157,47 @@ if (isset($_POST['logOut'])) {
     exit();
 }
 
-Function Encrypt($content, $cipher, $conn){
+Function Encrypt($content, $cipher, $conn, $key){
     $time = date('Y-m-d H:i:s'); // Current timestamp
 
     if ($cipher == "Simple Substitution"){
-        simpleSubstitution();
+        simpleSubstitution($key);
     } else if ($cipher == "Double Transposition"){
-        doubleTransposition();
+        doubleTransposition($key);
     } else if ($cipher == "RC4"){
-        RC4();
+        RC4($key);
     }else{
         die(ERROR_MESSAGE);
     }
 
     try {
         // Insert the time, input, and cipher into the database
-        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $time, $content, $cipher);
+        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, key) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $time, $content, $cipher, $key);
+        $stmt->execute();
+        echo "Data saved successfully!<br>";
+    } catch (Exception $e) {
+        die(ERROR_MESSAGE);
+    }
+}
+
+Function Decrypt($content, $cipher, $conn, $key){
+    $time = date('Y-m-d H:i:s'); // Current timestamp
+
+    if ($cipher == "Simple Substitution"){
+        simpleSubstitutionDecrypt($key);
+    } else if ($cipher == "Double Transposition"){
+        doubleTranspositionDecrypt($key);
+    } else if ($cipher == "RC4"){
+        RC4Decrypt($key);
+    }else{
+        die(ERROR_MESSAGE);
+    }
+
+    try {
+        // Insert the time, input, and cipher into the database
+        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, key) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("ssss", $time, $content, $cipher, $key);
         $stmt->execute();
         echo "Data saved successfully!<br>";
     } catch (Exception $e) {
@@ -157,13 +206,24 @@ Function Encrypt($content, $cipher, $conn){
 }
 
 //Functions for en/decryption:
-Function simpleSubstitution(){
+Function simpleSubstitution($key){
 
 }
-Function doubleTransposition(){
+Function doubleTransposition($key){
     
 }
-Function RC4(){
+Function RC4($key){
     
 }
+
+Function simpleSubstitutionDecrypt($key){
+
+}
+Function doubleTranspositionDecrypt($key){
+    
+}
+Function RC4Decrypt($key){
+    
+}
+
 ?>
