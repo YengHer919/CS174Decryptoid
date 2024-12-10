@@ -3,7 +3,6 @@
 
 CREATE TABLE credentials (
     name VARCHAR(36) NOT NULL,
-    id INT(9) NOT NULL,
     email VARCHAR(32) NOT NULL,
     password CHAR(60) NOT NULL
 ) ENGINE InnoDB;

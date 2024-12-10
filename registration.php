@@ -9,12 +9,12 @@
     // HTML to log in
     echo <<<_END
         <html> <head> <title> Decryptoid Signup and Login Page </title> 
-        <script src="home_validation.js"> </script> 
+        <script src="registration_validation.js"> </script> 
         <h1> Decryptoid </h1> </head>
         Log in
         <form method="post" action="registration.php" enctype="multipart/form-data"><pre>
-        Enter Name: <input type="text" name="username" required>
-        Enter Password: <input type="text" name="password" required>
+        Enter Username: <input type="text" name="username" required>
+        Enter Password: <input type="password" name="password" required>
         <input type="submit" value="Log in">
         </pre></form>
     _END;
@@ -47,7 +47,7 @@
             $row = $result->fetch_array(MYSQLI_NUM);
 
             // Verify Password
-            $token = password_verify($pw_temp, $row[3]);
+            $token = password_verify($pw_temp, $row[2]);
             if ($token) { // If passwords match, store all data into session
                 $_SESSION['auth'] = 1;
                 echo "successful log in";
@@ -75,10 +75,9 @@
     echo "Sign up";
     echo <<<_END
             <form method="post" action="registration.php" enctype="multipart/form-data" onsubmit="return validate(this)"><pre>
-                Enter Name: <input type="text" name="user" required>
-                Enter ID: <input type="text" name="id" required>
-                Enter Email: <input type="text" name="email" required>
-                Enter Password: <input type="text" name="passwd" required>
+                Enter Username: <input type="text" name="user" id="user">
+                Enter Email: <input type="text" name="email" id="email">
+                Enter Password: <input type="password" name="passwd" id="passwd">
                 <input type="submit" value="Sign up">
             </pre></form>
             _END;
@@ -119,7 +118,7 @@
     // }
 
     // Check if all fields have been entered
-    if (isset($_POST['user']) && isset($_POST['id']) && isset($_POST['email']) && isset($_POST['passwd'])) {
+    if (isset($_POST['user']) && isset($_POST['email']) && isset($_POST['passwd'])) {
         // Open connection to database
         try {
             $conn = new mysqli($hn, $un, $pw, $db);
@@ -129,13 +128,12 @@
         
         // Get info from fields
         $userName = mysql_entities_fix_string($conn, $_POST['user']);
-        $id = mysql_entities_fix_string($conn, $_POST['id']);
         $email = mysql_entities_fix_string($conn, $_POST['email']);
         $password =  mysql_entities_fix_string($conn, $_POST['passwd']);
         $hashPass = password_hash($password, PASSWORD_BCRYPT);
         // Prepare to insert the new user into the database
-        $stmt = $conn->prepare("INSERT INTO credentials (name, id, email, password) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("sissss", $userName, $id, $email, $hashPass);
+        $stmt = $conn->prepare("INSERT INTO credentials (name, email, password) VALUES (?, ?, ?)");
+        $stmt->bind_param("sss", $userName, $email, $hashPass);
 
         // Execute the statement and check for success
         try{
