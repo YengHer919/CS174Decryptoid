@@ -13,5 +13,5 @@ CREATE TABLE cipher_logs (
     time TIMESTAMP(6), 
     input TEXT, 
     cipher VARCHAR(20), 
-    key VARCHAR(32)
+    cipher_key VARCHAR(32)
 ) ENGINE InnoDB;

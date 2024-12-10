@@ -172,7 +172,7 @@ Function Encrypt($content, $cipher, $conn, $key){
 
     try {
         // Insert the time, input, and cipher into the database
-        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, key) VALUES (?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, cipher_key) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $time, $content, $cipher, $key);
         $stmt->execute();
         echo "Data saved successfully!<br>";
@@ -196,7 +196,7 @@ Function Decrypt($content, $cipher, $conn, $key){
 
     try {
         // Insert the time, input, and cipher into the database
-        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, key) VALUES (?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, cipher_key) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $time, $content, $cipher, $key);
         $stmt->execute();
         echo "Data saved successfully!<br>";

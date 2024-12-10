@@ -136,39 +136,39 @@ echo <<<_END
         _END;
 
 // Check to make sure salts are unique
-function saltVerified($conn, $s1, $s2){
-    try {
-        $stmt = $conn->prepare("SELECT * FROM credentials WHERE salt1 = ?");
-        $stmt->bind_param("s", $s1);
-        $stmt->execute();
-        $result = $stmt->get_result();
-    } catch (Exception $e) {
-        die(ERROR_MESSAGE);
-    }
+// function saltVerified($conn, $s1, $s2){
+//     try {
+//         $stmt = $conn->prepare("SELECT * FROM credentials WHERE salt1 = ?");
+//         $stmt->bind_param("s", $s1);
+//         $stmt->execute();
+//         $result = $stmt->get_result();
+//     } catch (Exception $e) {
+//         die(ERROR_MESSAGE);
+//     }
 
-    if ($result->num_rows) {
-        return false;    
-    }
-    $result->close();
-    $stmt->close(); 
+//     if ($result->num_rows) {
+//         return false;    
+//     }
+//     $result->close();
+//     $stmt->close(); 
 
-    try {
-        $stmt = $conn->prepare("SELECT * FROM credentials WHERE salt2 = ?");
-        $stmt->bind_param("s", $s2);
-        $stmt->execute();
-        $result = $stmt->get_result();
-    } catch (Exception $e) {
-        die(ERROR_MESSAGE);
-    }
+//     try {
+//         $stmt = $conn->prepare("SELECT * FROM credentials WHERE salt2 = ?");
+//         $stmt->bind_param("s", $s2);
+//         $stmt->execute();
+//         $result = $stmt->get_result();
+//     } catch (Exception $e) {
+//         die(ERROR_MESSAGE);
+//     }
     
-    if ($result->num_rows) {
-        return false;    
-    }
-    $result->close();
-    $stmt->close(); 
+//     if ($result->num_rows) {
+//         return false;    
+//     }
+//     $result->close();
+//     $stmt->close(); 
     
-    return true;
-}
+//     return true;
+// }
 
 // Check if all fields have been entered
 if (isset($_POST['user']) && isset($_POST['id']) && isset($_POST['email']) && isset($_POST['passwd'])) {
