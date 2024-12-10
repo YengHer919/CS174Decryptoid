@@ -42,12 +42,13 @@ function validateEmail(field) {
 }
 function validatePassword(field)
 {
-if (field == "") return "No Password was entered.\n"
-else if (field.length < 6) // no passwords shorter than 6
-return "Passwords must be at least 6 characters.\n"
-else if (!/[a-z]/.test(field) || ! /[A-Z]/.test(field) ||!/[0-9]/.test(field))
-return "Passwords require at least one lowercase and uppercase letter and at least one number.\n"
-return ""
+    if (field == "") 
+        return "No Password was entered.\n"
+    else if (field.length < 6) // no passwords shorter than 6
+        return "Passwords must be at least 6 characters.\n"
+    else if (!/[a-z]/.test(field) || ! /[A-Z]/.test(field) ||!/[0-9]/.test(field))
+        return "Passwords require at least one lowercase and uppercase letter and at least one number.\n"
+    return ""
 }
 </script>
 </head>
@@ -96,10 +97,10 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     // If user exsists
     if ($result->num_rows) {
         $row = $result->fetch_array(MYSQLI_NUM);
-        $salt1 = $row[4]; $salt2 = $row[5];
+
         // Verify Password
-        $token = hash('ripemd128', "$salt1$pw_temp$salt2");
-        if ($token == $row[3]) { // If passwords match, store all data into session
+        $token = password_verify($pw_temp, $row[3]);
+        if ($token) { // If passwords match, store all data into session
             $_SESSION['auth'] = 1;
             echo "successful log in";
             //session_regenerate_id();
@@ -183,33 +184,17 @@ if (isset($_POST['user']) && isset($_POST['id']) && isset($_POST['email']) && is
     $id = mysql_entities_fix_string($conn, $_POST['id']);
     $email = mysql_entities_fix_string($conn, $_POST['email']);
     $password =  mysql_entities_fix_string($conn, $_POST['passwd']);
-
-    // Salt generation
-    $randomNumber1 = random_int(1, 8);
-    $randomNumber2 = random_int(1, 8);
-    $salt1 = bin2hex(random_bytes($randomNumber1)); 
-    $salt2 = bin2hex(random_bytes($randomNumber2));
-    // attempts to stop inf loops
-    $attempts = 0; 
-    while(!saltVerified($conn, $salt1, $salt2)){
-        $randomNumber1 = random_int(1, 8);
-        $randomNumber2 = random_int(1, 8);
-        $salt1 = bin2hex(random_bytes($randomNumber1)); 
-        $salt2 = bin2hex(random_bytes($randomNumber2));
-        $attempts++;
-        if ($attempts >= 10) die("Failed to generate unique salts.");
-    }
-    $hashPass = hash('ripemd128', "$salt1$password$salt2");
+    $hashPass = password_hash($password, PASSWORD_BCRYPT);
     // Prepare to insert the new user into the database
-    $stmt = $conn->prepare("INSERT INTO credentials (name, id, email, password, salt1, salt2) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("sissss", $userName, $id, $email, $hashPass, $salt1, $salt2);
+    $stmt = $conn->prepare("INSERT INTO credentials (name, id, email, password) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("sissss", $userName, $id, $email, $hashPass);
 
     // Execute the statement and check for success
     try{
         $stmt->execute();
         echo "User registered successfully! Please log in <br>";
     } catch (Exception $e) {
-        die(ERRORMESSAGE);
+        die(ERROR_MESSAGE);
     }    
     $stmt->close(); 
     $conn -> close(); 
