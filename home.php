@@ -5,6 +5,7 @@
 
     // Miscellaneous setup
     require_once 'init.php';
+    session_regenerate_id();
 
     echo <<<_END
         <html> <head> <title> Decryptoid Signup and Login Page </title> 
@@ -31,7 +32,6 @@
         // Redirect to the registration page
         $conn->close();
         destroy_session_and_data();
-        session_regenerate_id();
         header("Location: registration.php");
         die();
     }
