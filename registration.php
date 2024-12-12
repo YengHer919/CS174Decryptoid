@@ -5,6 +5,7 @@
 
     // Miscellaneous setup
     require_once 'init.php';
+    session_regenerate_id();
 
     // HTML to log in
     echo <<<_END
@@ -51,7 +52,6 @@
             if ($token) { // If passwords match, store all data into session
                 $_SESSION['auth'] = 1;
                 echo "successful log in";
-                //session_regenerate_id();
                 $result->close();
                 $stmt->close();
                 $conn -> close();
