@@ -29,6 +29,7 @@
     // Makes sure someone can't skip to home page
     if (!isset($_SESSION["auth"])){   
         // Redirect to the registration page
+        $conn->close();
         destroy_session_and_data();
         session_regenerate_id();
         header("Location: registration.php");
