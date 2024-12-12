@@ -56,18 +56,18 @@
     </form>
     _END;
 
-    $action = isset($_POST['action']) ? mysql_entities_fix_string($conn, $_POST['action']) : '';
+    $action = isset($_POST['action']) ? sanitization($conn, $_POST['action']) : '';
 
     if ($action === "Encrypt") {
-        $cipher = mysql_entities_fix_string($conn, $_POST['cipher']);
-        $key = mysql_entities_fix_string($conn, $_POST['key']);
+        $cipher = sanitization($conn, $_POST['cipher']);
+        $key = sanitization($conn, $_POST['key']);
 
         echo "Encrypting with cipher: $cipher<br>";
 
-        if (isset($_POST['file'])) {
-            $content = mysql_entities_fix_string($conn, $_FILES['field']);
-            if (mysql_entities_fix_string($conn, $_FILES['filename']['type']) == 'text/plain') {
-                $fileName = mysql_entities_fix_string($conn, $_FILES['filename']['tmp_name']);
+        if (isset($_FILES['file'])) {
+            $content = sanitization($conn, $_FILES['field']);
+            if (sanitization($conn, $_FILES['file']['type']) == 'text/plain') {
+                $fileName = sanitization($conn, $_FILES['file']['tmp_name']);
             }else{
                 die ("File must be type .txt!");
             }
@@ -75,28 +75,28 @@
             if (!is_uploaded_file($fileName)) {
                 die("Error uploading the file. Please try again.");
             }else{
-                $fileContent = mysql_entities_fix_string($conn, file_get_contents($fileName));
-                $content = preg_replace('/\r\n|\r|\n/', '<br>', html_entity_decode($fileContent));    
+                $fileContent = preg_replace('/\r\n|\r|\n/', '\\n', file_get_contents($fileName));
+                $content = sanitization($conn, $fileContent);
             }
             Encrypt($content, $cipher, $conn, $key);
         }
 
         else if (isset($_POST['field']) && isset($_POST['cipher'])) {
-            $content = mysql_entities_fix_string($conn, $_POST['field']);
+            $content = sanitization($conn, $_POST['field']);
             Encrypt($content, $cipher, $conn, $key);
         }
     }
 
     else if ($action === "Decrypt") {
-        $cipher = mysql_entities_fix_string($conn, $_POST['cipher']);
-        $key = mysql_entities_fix_string($conn, $_POST['key']);
+        $cipher = sanitization($conn, $_POST['cipher']);
+        $key = sanitization($conn, $_POST['key']);
 
         echo "Decrypting with cipher: $cipher<br>";
 
         if (isset($_POST['file'])) {
-            $content = mysql_entities_fix_string($conn, $_FILES['field']);
-            if (mysql_entities_fix_string($conn, $_FILES['filename']['type']) == 'text/plain') {
-                $fileName = mysql_entities_fix_string($conn, $_FILES['filename']['tmp_name']);
+            $content = sanitization($conn, $_FILES['field']);
+            if (sanitization($conn, $_FILES['file']['type']) == 'text/plain') {
+                $fileName = sanitization($conn, $_FILES['file']['tmp_name']);
             }else{
                 die ("File must be type .txt!");
             }
@@ -104,14 +104,14 @@
             if (!is_uploaded_file($fileName)) {
                 die("Error uploading the file. Please try again.");
             }else{
-                $fileContent = mysql_entities_fix_string($conn, file_get_contents($fileName));
+                $fileContent = sanitization($conn, file_get_contents($fileName));
                 $content = preg_replace('/\r\n|\r|\n/', '<br>', html_entity_decode($fileContent));    
             }
             Decrypt($content, $cipher, $conn, $key);
         }
 
         else if (isset($_POST['field']) && isset($_POST['cipher'])) {
-            $content = mysql_entities_fix_string($conn, $_POST['field']);
+            $content = sanitization($conn, $_POST['field']);
             Decrypt($content, $cipher, $conn, $key);
         }
     } elseif (isset($_POST['key'])) {
@@ -140,11 +140,11 @@
     Function Encrypt($content, $cipher, $conn, $key){
         $time = date('Y-m-d H:i:s'); // Current timestamp
 
-        if ($cipher == "Simple Substitution"){
-            simpleSubstitution($key);
-        } else if ($cipher == "Double Transposition"){
+        if ($cipher == "simple_substitution"){
+            $encrypted = simpleSubstitution($content, $key);
+        } else if ($cipher == "double_transposition"){
             doubleTransposition($key);
-        } else if ($cipher == "RC4"){
+        } else if ($cipher == "rc4"){
             RC4($key);
         }else{
             die(ERROR_MESSAGE);
@@ -159,6 +159,10 @@
         } catch (Exception $e) {
             die(ERROR_MESSAGE);
         }
+        echo <<<_END
+            <h2> Result: </h2>
+            $encrypted
+        _END;
     }
 
     Function Decrypt($content, $cipher, $conn, $key){
@@ -179,14 +183,38 @@
             $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, cipher_key) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("ssss", $time, $content, $cipher, $key);
             $stmt->execute();
-            echo "Data saved successfully!<br>";
+            echo "Data saved successfully! <br>";
         } catch (Exception $e) {
             die(ERROR_MESSAGE);
         }
     }
 
     //Functions for en/decryption:
-    Function simpleSubstitution($key){
+    Function simpleSubstitution($text, $key){
+        $plaintext = explode("\\n", strtolower($text));
+        $final_text = "";
+        $divided_key = str_split(strtoupper($key));
+        $key_index = 0;
+        $key_table = array();
+        foreach(range('a','z') as $letter){
+            $key_table[$letter] = $divided_key[$key_index];
+            $key_index++; 
+        }
+        for ($i = 0; $i < count($plaintext); $i++){
+            $line = $plaintext[$i];
+            $final_line = "";
+            for ($j = 0; $j < strlen($line); $j++){
+                $char = $line[$j];
+                if (ctype_alpha($char)){
+                    $final_line .= $key_table[$char];
+                } 
+                else {
+                    $final_line .= $char;
+                }
+            }
+            $final_text .= $final_line . "<br>";
+        }
+        return $final_text;
 
     }
     Function doubleTransposition($key){

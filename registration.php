@@ -29,8 +29,8 @@
         }
 
         // Set variables to sanitized inputs
-        $un_temp = mysql_entities_fix_string($conn, $_POST['username']);
-        $pw_temp = mysql_entities_fix_string($conn, $_POST['password']);
+        $un_temp = sanitization($conn, $_POST['username']);
+        $pw_temp = sanitization($conn, $_POST['password']);
 
     // Check to find user in database 
         try {
@@ -127,9 +127,9 @@
         }
         
         // Get info from fields
-        $userName = mysql_entities_fix_string($conn, $_POST['user']);
-        $email = mysql_entities_fix_string($conn, $_POST['email']);
-        $password =  mysql_entities_fix_string($conn, $_POST['passwd']);
+        $userName = sanitization($conn, $_POST['user']);
+        $email = sanitization($conn, $_POST['email']);
+        $password =  sanitization($conn, $_POST['passwd']);
         $hashPass = password_hash($password, PASSWORD_BCRYPT);
         // Prepare to insert the new user into the database
         $stmt = $conn->prepare("INSERT INTO credentials (name, email, password) VALUES (?, ?, ?)");

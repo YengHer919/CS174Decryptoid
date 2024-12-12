@@ -13,13 +13,22 @@ const ERROR_MESSAGE = <<<'ERROR'
 <p>Something went wrong... Press this <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank">link</a> to troubleshoot.</p>
 ERROR;
 
-function mysql_entities_fix_string($connection, $string){
-        return htmlentities(mysql_fix_string($connection, $string));
-}
+// function mysql_entities_fix_string($connection, $string){
+//         return htmlentities(mysql_fix_string($connection, $string));
+// }
 
-function mysql_fix_string($connection, $string){
-        $string = stripslashes($string);
-        return $connection->real_escape_string($string);
-}
+// function mysql_fix_string($connection, $string){
+//         $string = stripslashes($string);
+//         return $connection->real_escape_string($string);
+// }
+
+// Sanitization Function for both HTML & SQL injections
+function sanitization($conn, $var) {
+        $var = $conn->real_escape_string($var);
+        $var = stripslashes($var);
+        $var = strip_tags($var);
+        $var = htmlentities($var);
+        return $var;
+    }
 
 ?>
