@@ -65,7 +65,7 @@
         echo "Encrypting with cipher: $cipher<br>";
 
         if (isset($_FILES['file'])) {
-            $content = sanitization($conn, $_FILES['field']);
+            $content = "";
             if (sanitization($conn, $_FILES['file']['type']) == 'text/plain') {
                 $fileName = sanitization($conn, $_FILES['file']['tmp_name']);
             }else{
@@ -87,14 +87,14 @@
         }
     }
 
-    else if ($action === "Decrypt") {
+    if ($action === "Decrypt") {
         $cipher = sanitization($conn, $_POST['cipher']);
         $key = sanitization($conn, $_POST['key']);
 
         echo "Decrypting with cipher: $cipher<br>";
 
-        if (isset($_POST['file'])) {
-            $content = sanitization($conn, $_FILES['field']);
+        if (isset($_FILES['file'])) {
+            $content = "";
             if (sanitization($conn, $_FILES['file']['type']) == 'text/plain') {
                 $fileName = sanitization($conn, $_FILES['file']['tmp_name']);
             }else{
@@ -104,16 +104,16 @@
             if (!is_uploaded_file($fileName)) {
                 die("Error uploading the file. Please try again.");
             }else{
-                $fileContent = sanitization($conn, file_get_contents($fileName));
-                $content = preg_replace('/\r\n|\r|\n/', '<br>', html_entity_decode($fileContent));    
+                $fileContent = preg_replace('/\r\n|\r|\n/', '\\n', file_get_contents($fileName));
+                $content = sanitization($conn, $fileContent);
             }
             Decrypt($content, $cipher, $conn, $key);
         }
-
         else if (isset($_POST['field']) && isset($_POST['cipher'])) {
             $content = sanitization($conn, $_POST['field']);
             Decrypt($content, $cipher, $conn, $key);
         }
+
     } elseif (isset($_POST['key'])) {
         echo "Invalid action.<br>";
     }
@@ -168,11 +168,11 @@
     Function Decrypt($content, $cipher, $conn, $key){
         $time = date('Y-m-d H:i:s'); // Current timestamp
 
-        if ($cipher == "Simple Substitution"){
-            simpleSubstitutionDecrypt($key);
-        } else if ($cipher == "Double Transposition"){
+        if ($cipher == "simple_substitution"){
+            $decrypted = simpleSubstitution($content, $key);
+        } else if ($cipher == "double_transposition"){
             doubleTranspositionDecrypt($key);
-        } else if ($cipher == "RC4"){
+        } else if ($cipher == "rc4"){
             RC4Decrypt($key);
         }else{
             die(ERROR_MESSAGE);
@@ -187,6 +187,10 @@
         } catch (Exception $e) {
             die(ERROR_MESSAGE);
         }
+        echo <<<_END
+            <h2> Result: </h2>
+            $decrypted
+        _END;
     }
 
     //Functions for en/decryption:
