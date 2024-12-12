@@ -115,9 +115,10 @@
             Decrypt($content, $cipher, $conn, $key);
         }
 
-    } elseif (isset($_POST['key'])) {
-        echo "Invalid action.<br>";
-    }
+    } 
+    // elseif (isset($_POST['key'])) {
+    //     echo "Invalid action.<br>";
+    // }
 
     $conn->close();
 
@@ -163,6 +164,7 @@
         echo <<<_END
             <h2> Result: </h2>
             $encrypted
+            <br>
         _END;
     }
 
@@ -191,6 +193,7 @@
         echo <<<_END
             <h2> Result: </h2>
             $decrypted
+            <br>
         _END;
     }
 
@@ -229,9 +232,6 @@
         
     }
 
-    Function simpleSubstitutionDecrypt($key){
-
-    }
     Function doubleTranspositionDecrypt($key){
         
     }
