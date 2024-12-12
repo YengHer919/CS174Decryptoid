@@ -64,8 +64,8 @@
         $key = sanitization($conn, $_POST['key']);
 
         echo "Encrypting with cipher: $cipher<br>";
-
-        if (isset($_FILES['file'])) {
+         // Check if file is set and if it isn't empty 
+         if (isset($_FILES['file']) && sanitization($conn, $_FILES['file']['tmp_name']) != "") {
             $content = "";
             if (sanitization($conn, $_FILES['file']['type']) == 'text/plain') {
                 $fileName = sanitization($conn, $_FILES['file']['tmp_name']);
@@ -93,8 +93,8 @@
         $key = sanitization($conn, $_POST['key']);
 
         echo "Decrypting with cipher: $cipher<br>";
-
-        if (isset($_FILES['file'])) {
+          // Check if file is set and if it isn't empty 
+         if (isset($_FILES['file']) && sanitization($conn, $_FILES['file']['tmp_name']) != "") {
             $content = "";
             if (sanitization($conn, $_FILES['file']['type']) == 'text/plain') {
                 $fileName = sanitization($conn, $_FILES['file']['tmp_name']);
