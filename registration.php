@@ -52,6 +52,9 @@
                 $_SESSION['auth'] = 1;
                 echo "successful log in";
                 //session_regenerate_id();
+                $result->close();
+                $stmt->close();
+                $conn -> close();
                 header("Location: home.php");
                 exit();
             // If user exsists and password is wrong, let the user know
