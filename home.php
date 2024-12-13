@@ -5,6 +5,7 @@
 
     // Miscellaneous setup
     require_once 'init.php';
+    require_once 'ciphers.php';
     session_regenerate_id();
 
     echo <<<_END
@@ -147,7 +148,7 @@
         } else if ($cipher == "double_transposition"){
             doubleTransposition($key);
         } else if ($cipher == "rc4"){
-            RC4($key);
+            RC4($content, $key);
         }else{
             die(ERROR_MESSAGE);
         }
@@ -196,47 +197,4 @@
             <br>
         _END;
     }
-
-    //Functions for en/decryption:
-    Function simpleSubstitution($text, $key){
-        $plaintext = explode("\\n", strtolower($text));
-        $final_text = "";
-        $divided_key = str_split(strtoupper($key));
-        $key_index = 0;
-        $key_table = array();
-        foreach(range('a','z') as $letter){
-            $key_table[$letter] = $divided_key[$key_index];
-            $key_index++; 
-        }
-        for ($i = 0; $i < count($plaintext); $i++){
-            $line = $plaintext[$i];
-            $final_line = "";
-            for ($j = 0; $j < strlen($line); $j++){
-                $char = $line[$j];
-                if (ctype_alpha($char)){
-                    $final_line .= $key_table[$char];
-                } 
-                else {
-                    $final_line .= $char;
-                }
-            }
-            $final_text .= $final_line . "<br>";
-        }
-        return $final_text;
-
-    }
-    Function doubleTransposition($key){
-        
-    }
-    Function RC4($key){
-        
-    }
-
-    Function doubleTranspositionDecrypt($key){
-        
-    }
-    Function RC4Decrypt($key){
-        
-    }
-
 ?>
