@@ -35,7 +35,7 @@
         foreach($content as $line){
             $dec_rep = array();
             for ($j = 0; $j < strlen($line); $j++){
-                $dec_rep = hexdec(bin2hex($line[$j]));
+                $dec_rep[$j] = hexdec(bin2hex($line[$j]));
             }
             $keystream = generate_key($dec_rep, $key);
             for ($i = 0; $i < count($dec_rep); $i++){
