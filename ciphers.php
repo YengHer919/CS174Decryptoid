@@ -31,45 +31,58 @@
     }
     Function RC4($text, $key){
         $content = explode("\\n", strtolower($text));
-        $content_hex = bin2hex($content);
-        $content_arr = array();
-        $content_index = 0;
-        for($b = 0; $b < strlen($content_hex)-2; $b += 2){
-            $hex = $content_hex[$b] . $content_hex[$b+1];
-            $content_arr[$content_index] = $hex;
-            $content_index++;
+        $final = "";
+        foreach($content as $line){
+            $dec_rep = array();
+            for ($j = 0; $j < strlen($line); $j++){
+                $dec_rep = hexdec(bin2hex($line[$j]));
+            }
+            $keystream = generate_key($dec_rep, $key);
+            for ($i = 0; $i < count($dec_rep); $i++){
+                $final .= $keystream[$i] xor $line[$i];
+            }
+            $final .= "<br>";
+        }
+        return $final;
+    }
+
+    function generate_key($line, $key){
+        $key_arr = explode(" ", $key);
+        $dec_key = array();
+        $keystream = array();
+        for ($h = 0; $h < count($key_arr); $h++){
+            $dec_key[$h] = hexdec($key_arr[$h]);
         }
         $s = array();
-        $key_arr = explode(" ", $key);
         $k = array();
         $i = 0;
         for ($i = 0; $i < 256; $i++){
             $s[$i] = $i;
-            $k[$i] = $key_arr[$i % count($key_arr)];
-            $i++;
+            $k[$i] = $i % count($dec_key);
         }
         $j = 0;
         for ($i = 0; $i < 256; $i++){
-            $j = (($j + $s[$i]) + $k[$i]) % 256;
-            // Swap(S[i], S[j])
+            $j = ($j + $s[$i] + $k[$i]) % 256;
             $temp = $s[$i];
             $s[$i] = $s[$j];
             $s[$j] = $temp;
         }
         $i = $j = 0;
-        $key_stream = array();
-        for($c = 0; $c < count($content_arr); $c++){
+        for ($b = 0; $b < count($line); $b++){
             $i = ($i + 1) % 256;
             $j = ($j + $s[$i]) % 256;
-            // Swap(S[i], S[j])
             $temp = $s[$i];
             $s[$i] = $s[$j];
             $s[$j] = $temp;
-            $t = ($s[$i] + $s[$j]) % 256;
-            $key_stream[$c] = $s[$t];
+            $key = ($s[$i] + $s[$j]) % 256;
+            $keystream[$b] = dechex($s[$key]);
         }
+        return $keystream;
     }
 
+    function swap(){
+        
+    }
     Function doubleTranspositionDecrypt($key){
         
     }

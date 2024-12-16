@@ -148,7 +148,7 @@
         } else if ($cipher == "double_transposition"){
             doubleTransposition($key);
         } else if ($cipher == "rc4"){
-            RC4($content, $key);
+            $encrypted = RC4($content, $key);
         }else{
             die(ERROR_MESSAGE);
         }
