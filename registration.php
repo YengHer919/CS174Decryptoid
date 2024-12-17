@@ -1,7 +1,8 @@
 <?php
-    // Aung Paing Soe and Yeng Her
-    // 12.8.24
-    // Final Decryptiod
+    /* Aung Paing Soe and Yeng Her
+       12/17/2024, CS 174-03
+       Final Project - Decryptiod
+    */
 
     // Miscellaneous setup
     require_once 'init.php';
@@ -12,7 +13,7 @@
         <html> <head> <title> Decryptoid Signup and Login Page </title> 
         <script src="registration_validation.js"> </script> 
         <h1> Decryptoid </h1> </head>
-        Log in
+        <h2> Log in </h2>
         <form method="post" action="registration.php" enctype="multipart/form-data"><pre>
         Enter Username: <input type="text" name="username" required>
         Enter Password: <input type="password" name="password" required>
@@ -75,7 +76,7 @@
 
 
     // Form to register
-    echo "Sign up";
+    echo "<h2> Sign up </h2>";
     echo <<<_END
             <form method="post" action="registration.php" enctype="multipart/form-data" onsubmit="return validate(this)"><pre>
                 Enter Username: <input type="text" name="user" id="user">
@@ -84,41 +85,6 @@
                 <input type="submit" value="Sign up">
             </pre></form>
             _END;
-
-    // Check to make sure salts are unique
-    // function saltVerified($conn, $s1, $s2){
-    //     try {
-    //         $stmt = $conn->prepare("SELECT * FROM credentials WHERE salt1 = ?");
-    //         $stmt->bind_param("s", $s1);
-    //         $stmt->execute();
-    //         $result = $stmt->get_result();
-    //     } catch (Exception $e) {
-    //         die(ERROR_MESSAGE);
-    //     }
-
-    //     if ($result->num_rows) {
-    //         return false;    
-    //     }
-    //     $result->close();
-    //     $stmt->close(); 
-
-    //     try {
-    //         $stmt = $conn->prepare("SELECT * FROM credentials WHERE salt2 = ?");
-    //         $stmt->bind_param("s", $s2);
-    //         $stmt->execute();
-    //         $result = $stmt->get_result();
-    //     } catch (Exception $e) {
-    //         die(ERROR_MESSAGE);
-    //     }
-        
-    //     if ($result->num_rows) {
-    //         return false;    
-    //     }
-    //     $result->close();
-    //     $stmt->close(); 
-        
-    //     return true;
-    // }
 
     // Check if all fields have been entered
     if (isset($_POST['user']) && isset($_POST['email']) && isset($_POST['passwd'])) {
