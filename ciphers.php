@@ -30,16 +30,22 @@
         
     }
     Function RC4($text, $key){
-        $content = explode("\\n", strtolower($text));
+        $content = explode("\\n", $text);
         $final = "";
         foreach($content as $line){
             $dec_rep = array();
             for ($j = 0; $j < strlen($line); $j++){
-                $dec_rep[$j] = hexdec(bin2hex($line[$j]));
+                $dec_rep[$j] = ord($line[$j]);
             }
             $keystream = generate_key($dec_rep, $key);
             for ($i = 0; $i < count($dec_rep); $i++){
-                $final .= $keystream[$i] xor $line[$i];
+                $xor = dechex($keystream[$i] ^ $dec_rep[$i]);
+                if (strlen($xor) == 1){
+                    $final .= "0" . $xor . " ";
+                }
+                else {
+                    $final .= $xor . " ";
+                }
             }
             $final .= "<br>";
         }
@@ -47,18 +53,19 @@
     }
 
     function generate_key($line, $key){
-        $key_arr = explode(" ", $key);
-        $dec_key = array();
         $keystream = array();
-        for ($h = 0; $h < count($key_arr); $h++){
-            $dec_key[$h] = hexdec($key_arr[$h]);
+        $dec_key = array();
+        for ($h = 0; $h < strlen($key); $h++){
+            $dec_key[$h] = ord($key[$h]);
+            // echo "$key[$h] --> $dec_key[$h]<br>";
         }
         $s = array();
         $k = array();
         $i = 0;
-        for ($i = 0; $i < 256; $i++){
+        while ($i < 256){
             $s[$i] = $i;
-            $k[$i] = $i % count($dec_key);
+            $k[$i] = $dec_key[$i % count($dec_key)];
+            $i++;
         }
         $j = 0;
         for ($i = 0; $i < 256; $i++){
@@ -74,9 +81,12 @@
             $temp = $s[$i];
             $s[$i] = $s[$j];
             $s[$j] = $temp;
-            $key = ($s[$i] + $s[$j]) % 256;
-            $keystream[$b] = dechex($s[$key]);
+            $t = ($s[$i] + $s[$j]) % 256;
+            $keystream[$b] = $s[$t];
+            // echo "$keystream[$b] <br>";
         }
+        // $key_count = count($keystream);
+        // echo "<br> $key_count <br>";
         return $keystream;
     }
 
