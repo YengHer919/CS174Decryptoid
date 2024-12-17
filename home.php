@@ -39,7 +39,7 @@
 
     echo <<<_END
         Welcome! Please submit a '.txt' file or type in the text box. <br>
-        Please only do one at a time, if you choose to do both, the file will have priority <br> <br>
+        Please only do one at a time, if you choose to do both, the file will have priority. <br> <br>
         <u>Key instructions:</u> <br>
         <b>Simple Substitution</b> - String of length 26 with no repeating alphabets <br>
         <b>RC4</b> - String of alphanumeric characters only <br> <br>
@@ -183,7 +183,7 @@
         } else if ($cipher == "double_transposition"){
             $decrypted = doubleTranspositionDecrypt($key, $content);
         } else if ($cipher == "rc4"){
-            RC4Decrypt($key);
+            $decrypted = RC4Decrypt($content, $key);
         }else{
             die(ERROR_MESSAGE);
         }

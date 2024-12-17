@@ -53,6 +53,26 @@
         return $final;
     }
 
+
+    Function RC4Decrypt($content, $key){
+        $content = explode("\\n", $content);
+        $final = "";
+        foreach($content as $line){
+            $dec_rep = array();
+            $line_chars = explode(" ", $line);
+            for ($j = 0; $j < count($line_chars); $j++){
+                $dec_rep[$j] = hexdec($line_chars[$j]);
+            }
+            $keystream = generate_key($dec_rep, $key);
+            for ($i = 0; $i < count($dec_rep); $i++){
+                $xor = chr($keystream[$i] ^ $dec_rep[$i]);
+                $final .= $xor . " ";
+            }
+            $final .= "<br>";
+        }
+        return $final;
+    }
+
     function generate_key($line, $key){
         $keystream = array();
         $dec_key = array();
@@ -89,14 +109,6 @@
         // $key_count = count($keystream);
         // echo "<br> $key_count <br>";
         return $keystream;
-    }
-
-    function swap(){
-        
-    }
-
-    Function RC4Decrypt($key){
-        
     }
 
     function doubleTransposition($key, $message) {
