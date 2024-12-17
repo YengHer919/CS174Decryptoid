@@ -42,7 +42,8 @@
         Please only do one at a time, if you choose to do both, the file will have priority. <br> <br>
         <u>Key instructions:</u> <br>
         <b>Simple Substitution</b> - String of length 26 with no repeating alphabets <br>
-        <b>RC4</b> - String of alphanumeric characters only <br> <br>
+        <b>RC4</b> - String of alphanumeric characters only <br>
+        <b>Double Transposition</b> - Non-alphanumeric characters will not be considered<br> <br>
     _END;
 
     // Form to read input and en/decrypt
