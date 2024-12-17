@@ -178,7 +178,7 @@
         $grid = inversePermute($grid, $numericKey);
     
         // Return grid as string
-        return rtrim(gridToString($grid));
+        return gridToString($grid);
     }
     
     function inversePermute($grid, $key) {
