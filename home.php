@@ -203,14 +203,4 @@
             <br>
         _END;
     }
-
-    //Example Testing, delete/comment when done
-    $key = "tester";
-    $message = "First sentence";
-    $encrypted = doubleTransposition($key, $message);
-    $decrypted = doubleTranspositionDecrypt($key, $encrypted);
-    echo "Key: $key <br>";
-    echo "Original: $message<br>";
-    echo "Encrypted: $encrypted<br>";
-    echo "Decrypted: $decrypted<br>";
 ?>
