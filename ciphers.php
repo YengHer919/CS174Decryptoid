@@ -1,5 +1,8 @@
 <?php
     Function simpleSubstitution($text, $key){
+        if (strlen($key) != 26){
+            return "Invalid Key: Not possible to decrypt/encrypt!";
+        }
         $content = explode("\\n", strtolower($text));
         $final_text = "";
         $divided_key = str_split(strtoupper($key));

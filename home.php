@@ -37,21 +37,27 @@
         die();
     }
 
-    echo "Welcome! Please submit a '.txt' file or type in the text box. <br>Please only do one at a time, if you choose to do both, the file will have priority";
+    echo <<<_END
+        Welcome! Please submit a '.txt' file or type in the text box. <br>
+        Please only do one at a time, if you choose to do both, the file will have priority <br> <br>
+        <u>Key instructions:</u> <br>
+        <b>Simple Substitution</b> - String of length 26 with no repeating alphabets <br>
+        <b>RC4</b> - String of alphanumeric characters only <br> <br>
+    _END;
 
     // Form to read input and en/decrypt
     echo <<<_END
     <form method="post" action="home.php" enctype="multipart/form-data" onsubmit="return validate(this)">
         <pre>
-            Insert Text: <input type="text" name="field">
-            Insert File: <input type="file" name="file" size="10">
+            Insert Text: <input type="text" name="field" id="field">
+            Insert File: <input type="file" name="file" id="file" size="10">
             Cipher: 
-            <select name="cipher" required>
+            <select name="cipher" id="cipher" required>
                 <option value="simple_substitution">Simple Substitution</option>
                 <option value="double_transposition">Double Transposition</option>
                 <option value="rc4">RC4</option>
             </select>
-            Insert Key: <input type="text" name="key" required>
+            Insert Key: <input type="text" name="key" id="key" required>
             <input type="submit" name="action" value="Encrypt">
             <input type="submit" name="action" value="Decrypt">
         </pre>
@@ -146,7 +152,7 @@
         if ($cipher == "simple_substitution"){
             $encrypted = simpleSubstitution($content, $key);
         } else if ($cipher == "double_transposition"){
-            $encrypted = simpleSubstitution($content, $key);
+            $encrypted = doubleTransposition($content, $key);
         } else if ($cipher == "rc4"){
             $encrypted = RC4($content, $key);
         }else{
@@ -199,11 +205,12 @@
     }
 
     //Example Testing, delete/comment when done
-     $key = "qwertyabc";
-    $message = "last christmas i gave you my heart lyrics";
+    $key = "tester";
+    $message = "First sentence";
     $encrypted = doubleTransposition($key, $message);
     $decrypted = doubleTranspositionDecrypt($key, $encrypted);
-    echo "Original: $message\n";
-    echo "Encrypted: $encrypted\n";
-    echo "Decrypted: $decrypted\n";
+    echo "Key: $key <br>";
+    echo "Original: $message<br>";
+    echo "Encrypted: $encrypted<br>";
+    echo "Decrypted: $decrypted<br>";
 ?>
