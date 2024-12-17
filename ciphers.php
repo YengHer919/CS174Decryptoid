@@ -116,14 +116,14 @@
         $key = preg_replace('/[^a-zA-Z0-9]/', '', $key);
         
         $keyArray = str_split($key);
-        $sortedKey = $keyArray;
-        sort($sortedKey); // Sort the key alphabetically
-        
-        // Create a numeric key mapping based on the sorted order
-        $numericKey = array_map(function($char) use ($sortedKey) {
-            return array_search($char, $sortedKey);
-        }, $keyArray);
-    
+        // Bind indices to characters before sorting
+        $indexedKey = array_combine(range(0, count($keyArray) - 1), $keyArray);
+
+        // Sort the array by value (alphabetically)
+        asort($indexedKey); // Keeps the original indices intact
+
+        // Extract the sorted indices to create the numeric key
+        $numericKey = array_keys($indexedKey);
         $numCol = count($numericKey);
         $numRows = ceil(strlen($message)/$numCol); // Round up number of rows
     
@@ -143,7 +143,7 @@
         $grid = transpose($grid);
     
         // Return grid as string
-        return rtrim(gridToString($grid));
+        return gridToString($grid);
     }
     
     function doubleTranspositionDecrypt($key, $message) {
@@ -151,13 +151,14 @@
         $key = preg_replace('/[^a-zA-Z0-9]/', '', $key);
         
         $keyArray = str_split($key);
-        $sortedKey = $keyArray;
-        sort($sortedKey); // Sort the key alphabetically
-        
-        // Create a numeric key mapping based on the sorted order
-        $numericKey = array_map(function($char) use ($sortedKey) {
-            return array_search($char, $sortedKey);
-        }, $keyArray);
+        // Bind indices to characters before sorting
+        $indexedKey = array_combine(range(0, count($keyArray) - 1), $keyArray);
+
+        // Sort the array by value (alphabetically)
+        asort($indexedKey); // Keeps the original indices intact
+
+        // Extract the sorted indices to create the numeric key
+        $numericKey = array_keys($indexedKey);
     
         $numCol = count($numericKey);
         $numRows = ceil(strlen($message)/$numCol); // Round up number of rows
