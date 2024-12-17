@@ -197,4 +197,13 @@
             <br>
         _END;
     }
+
+    //Example Testing, delete/comment when done
+     $key = "qwertyabc";
+    $message = "last christmas i gave you my heart lyrics";
+    $encrypted = doubleTransposition($key, $message);
+    $decrypted = doubleTranspositionDecrypt($key, $encrypted);
+    echo "Original: $message\n";
+    echo "Encrypted: $encrypted\n";
+    echo "Decrypted: $decrypted\n";
 ?>
