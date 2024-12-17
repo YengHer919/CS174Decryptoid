@@ -151,8 +151,8 @@
 
         if ($cipher == "simple_substitution"){
             $encrypted = simpleSubstitution($content, $key);
-        } else if ($cipher == "double_transposition"){
-            $encrypted = doubleTransposition($content, $key);
+       } else if ($cipher == "double_transposition"){
+            $encrypted = doubleTransposition($key, $content);
         } else if ($cipher == "rc4"){
             $encrypted = RC4($content, $key);
         }else{
