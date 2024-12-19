@@ -111,112 +111,114 @@
         return $keystream;
     }
 
-    function doubleTransposition($key, $message) {
-        // Normalize the key to ensure only alphanumeric characters are used
-        $key = preg_replace('/[^a-zA-Z0-9]/', '', $key);
-        
-        $keyArray = str_split($key);
-        // Bind indices to characters before sorting
-        $indexedKey = array_combine(range(0, count($keyArray) - 1), $keyArray);
-
-        // Sort the array by value (alphabetically)
-        asort($indexedKey); // Keeps the original indices intact
-
-        // Extract the sorted indices to create the numeric key
-        $numericKey = array_keys($indexedKey);
-        $numCol = count($numericKey);
-        $numRows = ceil(strlen($message)/$numCol); // Round up number of rows
-    
-        //Build the grid
-        $grid = [];
-         for ($i = 0; $i < $numRows; $i++) {
-             $start = $i * $numCol;
-             $grid[] = str_split(substr($message, $start, $numCol));
-         }
-    
-        // Permute rows
-        $grid = permute($grid, $numericKey);
-    
-        // Permute columns
-        $grid = transpose($grid);
-        $grid = permute($grid, $numericKey);
-        $grid = transpose($grid);
-    
-        // Return grid as string
-        return gridToString($grid);
+    function doubleTransposition($text, $row_key, $col_key) {
+        $text = explode("\\n", $text);
+        $row_arr = explode(",", $row_key);
+        $col_arr = explode(",", $col_key);
+        $row_num = max($row_arr);
+        $col_num = max($col_arr);
+        $ciphertext = "";
+        foreach($text as $line){
+            $grid = create_grid($line, $row_num, $col_num);
+            $row = row_permute($grid, $row_arr,  $col_num);
+            $final = col_permute($row, $col_arr, $row_num);
+            $ciphertext .= grid_to_str($final, $row_num, $col_num) . "<br>";
+        }
+        return $ciphertext;
     }
     
-    function doubleTranspositionDecrypt($key, $message) {
-        // Normalize the key to ensure only alphanumeric characters are used
-        $key = preg_replace('/[^a-zA-Z0-9]/', '', $key);
-        
-        $keyArray = str_split($key);
-        // Bind indices to characters before sorting
-        $indexedKey = array_combine(range(0, count($keyArray) - 1), $keyArray);
-
-        // Sort the array by value (alphabetically)
-        asort($indexedKey); // Keeps the original indices intact
-
-        // Extract the sorted indices to create the numeric key
-        $numericKey = array_keys($indexedKey);
-    
-        $numCol = count($numericKey);
-        $numRows = ceil(strlen($message)/$numCol); // Round up number of rows
-    
-        //Build the grid
-        $grid = [];
-         for ($i = 0; $i < $numRows; $i++) {
-             $start = $i * $numCol;
-             $grid[] = str_split(substr($message, $start, $numCol));
-         }
-    
-        // Inverse operations in reverse order
-        $grid = transpose($grid);
-        $grid = inversePermute($grid, $numericKey);
-        $grid = transpose($grid);
-        
-        $grid = inversePermute($grid, $numericKey);
-    
-        // Return grid as string
-        return gridToString($grid);
+    function doubleTranspositionDecrypt($text, $row_key, $col_key) {
+        $text = explode("\\n", $text);
+        $row_arr = explode(",", $row_key);
+        $col_arr = explode(",", $col_key);
+        $row_num = max($row_arr);
+        $col_num = max($col_arr);
+        $plaintext = "";
+        foreach($text as $line){
+            $grid = create_grid($line, $row_num, $col_num);
+            $col = inverse_col_permute($grid, $col_arr,  $row_num);
+            $final = inverse_row_permute($col, $row_arr, $col_num);
+            $plaintext .= grid_to_str($final, $row_num, $col_num) . "<br>";
+        }
+        return $plaintext;
     }
-    
-    function inversePermute($grid, $key) {
-        $permutedGrid = [];
-        
-        foreach ($grid as $row) {
-            $newRow = array_fill(0, count($key), ' ');  // Initialize with spaces
-            foreach ($key as $newPos => $oldPos) {
-                if (isset($row[$newPos])) {  // If we have a value at this position
-                    $newRow[$oldPos] = $row[$newPos];
-                }
+
+    function create_grid($line, $rows, $cols){
+        $grid = array();
+        $char_count = 0;
+        for($i = 0; $i<$rows; $i++){
+            for($j=0; $j<$cols; $j++){
+                if ($line[$char_count] == " ")
+                    $grid[$i][$j] = "_";
+                else 
+                    $grid[$i][$j] = $line[$char_count];
+                $char_count++;
             }
-            $permutedGrid[] = $newRow;
         }
-        return $permutedGrid;
+        return $grid;
     }
-     
-    function permute($grid, $key) {
-        $permutedGrid = [];
-        foreach ($grid as $row) {
-            $newRow = [];
-            foreach ($key as $index) {
-                $newRow[] = $row[$index] ?? ' ';
+
+    function grid_to_str($grid, $rows, $cols){
+        $str = "";
+        for($i = 0; $i<$rows; $i++){
+            for($j=0; $j<$cols; $j++){
+                $str .= $grid[$i][$j];
             }
-            $permutedGrid[] = $newRow;
         }
-        return $permutedGrid;
+        return $str;
+    }
+
+    function row_permute($grid, $row_arr, $col_num) {
+        $row_grid = array();
+        $r = 0; 
+        for($row=0; $row<count($row_arr); $row++){
+            $index = $row_arr[$row];
+            for($i=0; $i < $col_num; $i++){
+                $row_grid[$r][$i] = $grid[$index-1][$i];
+            }
+            $r++;
+        }
+        return $row_grid;
+    }
+
+    function col_permute($grid, $col_arr, $row_num){
+        $c = 0; 
+        $col_grid = array();
+        for($col=0; $col<count($col_arr); $col++){
+            $index = $col_arr[$col];
+            for($i=0; $i < $row_num; $i++){
+                $col_grid[$i][$c] = $grid[$i][$index-1];
+            }
+            $c++;
+        }
+        return $col_grid;
+    }
+
+    function inverse_row_permute($grid, $row_arr, $col_num){
+        $r = 0; 
+        $row_grid = array();
+        //Row Permutations
+        for($row=0; $row<count($row_arr); $row++){
+        $index = $row_arr[$row];
+            for($i=0; $i < $col_num; $i++){
+                $row_grid[$index-1][$i] = $grid[$r][$i];
+            }
+            $r++;
+        }
+        return $row_grid;
     }
     
-    function transpose($grid) {
-        $transposed = [];
-        for ($i = 0; $i < count($grid[0]); $i++) {
-            $transposed[$i] = array_column($grid, $i);
+    function inverse_col_permute($grid, $col_arr, $row_num){
+        $col_grid = array();
+        $c = 0;
+        for($col=0; $col<count($col_arr); $col++){
+            $index = $col_arr[$col];
+            for($i=0; $i < $row_num; $i++){
+                $col_grid[$i][$index-1] = $grid[$i][$c];
+            }
+            $c++;
         }
-        return $transposed;
+        return $col_grid;
     }
-   
-    function gridToString($grid) {
-        return implode('', array_map('implode', $grid));
-    }
+    
 ?>

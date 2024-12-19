@@ -42,24 +42,24 @@
         Please only do one at a time, if you choose to do both, the file will have priority. <br> <br>
         <u>Key instructions:</u> <br>
         <b>Simple Substitution</b> - String of length 26 with no repeating alphabets <br>
-        <b>RC4</b> - String of alphanumeric characters only <br>
-        <b>Double Transposition</b> - Non-alphanumeric characters will not be considered<br> <br>
+        <b>Double Transposition</b> - Comma-separated (No spaces in between commas) numbered list of column/row permutations <br>
+        <b>RC4</b> - String of alphanumeric characters only <br> <br>
     _END;
 
     // Form to read input and en/decrypt
     echo <<<_END
     <form method="post" action="home.php" enctype="multipart/form-data" onsubmit="return validate(this)">
         <pre>
-            Insert Text: <input type="text" name="field" id="field">
-            Insert File: <input type="file" name="file" id="file" size="10">
-            Cipher: 
-            <select name="cipher" id="cipher" required>
+            Insert Text: <input type="text" name="field" id="field"> <br>
+            Insert File: <input type="file" name="file" id="file" size="10"> <br>
+            Cipher: <select name="cipher" id="cipher" required>
                 <option value="simple_substitution">Simple Substitution</option>
                 <option value="double_transposition">Double Transposition</option>
                 <option value="rc4">RC4</option>
-            </select>
-            Insert Key: <input type="text" name="key" id="key" required>
-            <input type="submit" name="action" value="Encrypt">
+            </select> <br>
+            Insert Key or Row Permutation for Double Transposition Here: <input type="text" name="key" id="key" required> <br>
+            Insert Column Permutation for Double Transposition Here: <input type="text" name="col_key" id="col_key" required> <br>
+            <input type="submit" name="action" value="Encrypt"> <br>
             <input type="submit" name="action" value="Decrypt">
         </pre>
     </form>
@@ -70,6 +70,7 @@
     if ($action === "Encrypt") {
         $cipher = sanitization($conn, $_POST['cipher']);
         $key = sanitization($conn, $_POST['key']);
+        $col_key = sanitization($conn, $_POST['col_key']);
 
         echo "Encrypting with cipher: $cipher<br>";
          // Check if file is set and if it isn't empty 
@@ -87,18 +88,19 @@
                 $fileContent = preg_replace('/\r\n|\r|\n/', '\\n', file_get_contents($fileName));
                 $content = sanitization($conn, $fileContent);
             }
-            Encrypt($content, $cipher, $conn, $key);
+            Encrypt($content, $cipher, $conn, $key, $col_key);
         }
 
         else if (isset($_POST['field']) && isset($_POST['cipher'])) {
             $content = sanitization($conn, $_POST['field']);
-            Encrypt($content, $cipher, $conn, $key);
+            Encrypt($content, $cipher, $conn, $key, $col_key);
         }
     }
 
     if ($action === "Decrypt") {
         $cipher = sanitization($conn, $_POST['cipher']);
         $key = sanitization($conn, $_POST['key']);
+        $col_key = sanitization($conn, $_POST['col_key']);
 
         echo "Decrypting with cipher: $cipher<br>";
           // Check if file is set and if it isn't empty 
@@ -116,11 +118,11 @@
                 $fileContent = preg_replace('/\r\n|\r|\n/', '\\n', file_get_contents($fileName));
                 $content = sanitization($conn, $fileContent);
             }
-            Decrypt($content, $cipher, $conn, $key);
+            Decrypt($content, $cipher, $conn, $key, $col_key);
         }
         else if (isset($_POST['field']) && isset($_POST['cipher'])) {
             $content = sanitization($conn, $_POST['field']);
-            Decrypt($content, $cipher, $conn, $key);
+            Decrypt($content, $cipher, $conn, $key, $col_key);
         }
 
     } 
@@ -147,13 +149,13 @@
         exit();
     }
 
-    Function Encrypt($content, $cipher, $conn, $key){
+    Function Encrypt($content, $cipher, $conn, $key, $col_key){
         $time = date('Y-m-d H:i:s'); // Current timestamp
 
         if ($cipher == "simple_substitution"){
             $encrypted = simpleSubstitution($content, $key);
        } else if ($cipher == "double_transposition"){
-            $encrypted = doubleTransposition($key, $content);
+            $encrypted = doubleTransposition($content, $key, $col_key);
         } else if ($cipher == "rc4"){
             $encrypted = RC4($content, $key);
         }else{
@@ -176,13 +178,13 @@
         _END;
     }
 
-    Function Decrypt($content, $cipher, $conn, $key){
+    Function Decrypt($content, $cipher, $conn, $key, $col_key){
         $time = date('Y-m-d H:i:s'); // Current timestamp
 
         if ($cipher == "simple_substitution"){
             $decrypted = simpleSubstitution($content, $key);
         } else if ($cipher == "double_transposition"){
-            $decrypted = doubleTranspositionDecrypt($key, $content);
+            $decrypted = doubleTranspositionDecrypt($content, $key, $col_key);
         } else if ($cipher == "rc4"){
             $decrypted = RC4Decrypt($content, $key);
         }else{
