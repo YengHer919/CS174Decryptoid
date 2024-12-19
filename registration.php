@@ -8,7 +8,7 @@
     require_once 'init.php';
     session_regenerate_id();
 
-    if ($_SESSION['auth'] == 1){
+    if (isset($_SESSION['auth'])){
         header("Location: ./home.php");
     }
 
