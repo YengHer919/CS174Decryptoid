@@ -1,5 +1,9 @@
 <?php
-    Function simpleSubstitution($text, $key){
+    /* Aung Paing Soe and Yeng Her
+       12/19/2024, CS 174-03
+       Final Project - Decryptiod
+    */
+    function simpleSubstitution($text, $key){
         if (strlen($key) != 26){
             return "Invalid Key: Not possible to decrypt/encrypt!";
         }
@@ -30,7 +34,7 @@
 
     }
 
-    Function RC4($text, $key){
+    function RC4($text, $key){
         $content = explode("\\n", $text);
         $final = "";
         foreach($content as $line){
@@ -54,7 +58,7 @@
     }
 
 
-    Function RC4Decrypt($content, $key){
+    function RC4Decrypt($content, $key){
         $content = explode("\\n", $content);
         $final = "";
         foreach($content as $line){
@@ -78,7 +82,6 @@
         $dec_key = array();
         for ($h = 0; $h < strlen($key); $h++){
             $dec_key[$h] = ord($key[$h]);
-            // echo "$key[$h] --> $dec_key[$h]<br>";
         }
         $s = array();
         $k = array();
@@ -104,10 +107,7 @@
             $s[$j] = $temp;
             $t = ($s[$i] + $s[$j]) % 256;
             $keystream[$b] = $s[$t];
-            // echo "$keystream[$b] <br>";
         }
-        // $key_count = count($keystream);
-        // echo "<br> $key_count <br>";
         return $keystream;
     }
 
