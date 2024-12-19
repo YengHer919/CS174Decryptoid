@@ -8,6 +8,10 @@
     require_once 'init.php';
     session_regenerate_id();
 
+    if ($_SESSION['auth'] == 1){
+        header("Location: ./home.php");
+    }
+
     // HTML to log in
     echo <<<_END
         <html> <head> <title> Decryptoid Signup and Login Page </title> 

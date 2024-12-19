@@ -38,12 +38,13 @@
     }
 
     echo <<<_END
-        Welcome! Please submit a '.txt' file or type in the text box. <br>
-        Please only do one at a time, if you choose to do both, the file will have priority. <br> <br>
-        <u>Key instructions:</u> <br>
-        <b>Simple Substitution</b> - String of length 26 with no repeating alphabets <br>
-        <b>Double Transposition</b> - Comma-separated (No spaces in between commas) numbered list of column/row permutations <br>
-        <b>RC4</b> - String of alphanumeric characters only <br> <br>
+        <h2>Welcome!</h2>
+        Please submit a '.txt' file or type in the text box. <br>
+        Please only do one at a time, if you choose to do both, the file will have priority. <br>
+        <h3><u>Key Instructions:</u></h3>
+        <b>Simple Substitution</b> - String of length 26 with no repeating alphabets. <br>
+        <b>Double Transposition</b> - Comma-separated (No spaces in between commas) numbered list of column/row permutations. Please make sure the permutations work for all the lines in the file. <br>
+        <b>RC4</b> - String of alphanumeric characters only, which will be converted to hexadecimal numbers. <br> <br>
     _END;
 
     // Form to read input and en/decrypt
