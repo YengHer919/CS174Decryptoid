@@ -18,6 +18,9 @@ function validateInput(field, file) {
 }
 
 function validateKey(key, cipher) {
+    if (key == ""){
+        return "Invalid key: must not be empty.";
+    }
     // Check if key is a string
     if (typeof key !== "string") {
         return "Invalid key: must be a string.";

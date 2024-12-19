@@ -6,10 +6,11 @@
     // Miscellaneous setup
     require_once 'init.php';
     require_once 'ciphers.php';
+
     session_regenerate_id();
 
     echo <<<_END
-        <html> <head> <title> Decryptoid Home Page </title> 
+        <html> <head> <title> Decryptoid Signup and Login Page </title> 
         <script src="home_validation.js"> </script> 
         <h1> Decryptoid </h1> </head>
     _END;
@@ -31,10 +32,10 @@
     // Makes sure someone can't skip to home page
     if (!isset($_SESSION["auth"])){   
         // Redirect to the registration page
-        // $conn->close();
-        // destroy_session_and_data();
-        header("Location: ./registration.php");
-        // die();
+        $conn->close();
+        destroy_session_and_data();
+        header("Location: registration.php");
+        die();
     }
 
     echo <<<_END
@@ -47,32 +48,51 @@
         <b>RC4</b> - String of alphanumeric characters only, which will be converted to hexadecimal numbers. <br> <br>
     _END;
 
+    $cipher = isset($_POST['cipher']) ? sanitization($conn, $_POST['cipher']) : 'simple_substitution';
+
     // Form to read input and en/decrypt
-    echo <<<_END
+    if ($cipher == "double_transposition"){
+        echo <<<_END
         <form method="post" action="home.php" enctype="multipart/form-data" onsubmit="return validate(this)">
             <pre>
-                Insert Text: <input type="text" name="field" id="field"> <br>
-                Insert File: <input type="file" name="file" id="file" size="10"> <br>
-                Cipher: <select name="cipher" id="cipher" required>
-                    <option value="simple_substitution">Simple Substitution</option>
-                    <option value="double_transposition">Double Transposition</option>
-                    <option value="rc4">RC4</option>
-                </select> <br>
-                Insert Key or Row Permutation for Double Transposition Here: <input type="text" name="key" id="key" required> <br>
+            Insert Text: <input type="text" name="field" id="field"> <br>
+            Insert File: <input type="file" name="file" id="file" size="10"> <br>
+            Cipher: $cipher<br>
+                <input type="submit" name="cipher" value="simple_substitution"> <br>
+                <input type="submit" name="cipher" value="double_transposition"> <br>
+                <input type="submit" name="cipher" value="rc4"><br>
+                Insert Key or Row Permutation for Double Transposition Here: <input type="text" name="key" id="key"> <br>
                 Insert Column Permutation for Double Transposition Here: <input type="text" name="col_key" id="col_key"> <br>
                 <input type="submit" name="action" value="Encrypt"> <br>
                 <input type="submit" name="action" value="Decrypt">
             </pre>
         </form>
-    _END;
+        _END;
+    }else{
+        echo <<<_END
+        <form method="post" action="home.php" enctype="multipart/form-data" onsubmit="return validate(this)">
+            <pre>
+            Insert Text: <input type="text" name="field" id="field"> <br>
+            Insert File: <input type="file" name="file" id="file" size="10"> <br>
+            Cipher: $cipher<br>
+                <input type="submit" name="cipher" value="simple_substitution"> <br>
+                <input type="submit" name="cipher" value="double_transposition"> <br>
+                <input type="submit" name="cipher" value="rc4"><br>
+                Insert Key Here: <input type="text" name="key" id="key"> <br>
+                <input type="submit" name="action" value="Encrypt"> <br>
+                <input type="submit" name="action" value="Decrypt">
+            </pre>
+        </form>
+        _END;
+    }
 
+    
     $action = isset($_POST['action']) ? sanitization($conn, $_POST['action']) : '';
 
     if ($action === "Encrypt") {
-        $cipher = sanitization($conn, $_POST['cipher']);
         $key = sanitization($conn, $_POST['key']);
-        $col_key = sanitization($conn, $_POST['col_key']);
-
+        $col_key = isset($_POST['col_key']) ? sanitization($conn, $_POST['col_key']) : '';
+        
         echo "Encrypting with cipher: $cipher<br>";
          // Check if file is set and if it isn't empty 
          if (isset($_FILES['file']) && sanitization($conn, $_FILES['file']['tmp_name']) != "") {
@@ -92,14 +112,13 @@
             Encrypt($content, $cipher, $conn, $key, $col_key);
         }
 
-        else if (isset($_POST['field']) && isset($_POST['cipher'])) {
+        else if (isset($_POST['field'])) {
             $content = sanitization($conn, $_POST['field']);
             Encrypt($content, $cipher, $conn, $key, $col_key);
         }
     }
 
     if ($action === "Decrypt") {
-        $cipher = sanitization($conn, $_POST['cipher']);
         $key = sanitization($conn, $_POST['key']);
         $col_key = sanitization($conn, $_POST['col_key']);
 
@@ -121,7 +140,7 @@
             }
             Decrypt($content, $cipher, $conn, $key, $col_key);
         }
-        else if (isset($_POST['field']) && isset($_POST['cipher'])) {
+        else if (isset($_POST['field'])) {
             $content = sanitization($conn, $_POST['field']);
             Decrypt($content, $cipher, $conn, $key, $col_key);
         }

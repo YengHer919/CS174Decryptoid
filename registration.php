@@ -9,7 +9,9 @@
     session_regenerate_id();
 
     if (isset($_SESSION['auth'])){
-        header("Location: ./home.php");
+        if($_SESSION['auth'] == 1){
+            header("Location: ./home.php");
+        }
     }
 
     // HTML to log in
@@ -122,4 +124,3 @@
     }
 
 ?>
-
