@@ -1,7 +1,8 @@
 <?php
-    // Aung Paing Soe and Yeng Her
-    // 12.8.24
-    // CS174 Final Decryptiod
+    /* Aung Paing Soe and Yeng Her
+       12/19/2024, CS 174-03
+       Final Project - Decryptiod
+    */
 
     // Miscellaneous setup
     require_once 'init.php';
@@ -32,10 +33,7 @@
     // Makes sure someone can't skip to home page
     if (!isset($_SESSION["auth"])){   
         // Redirect to the registration page
-        $conn->close();
-        destroy_session_and_data();
-        header("Location: registration.php");
-        die();
+        header("Location: ./registration.php");
     }
 
     echo <<<_END
@@ -129,11 +127,7 @@
             $content = sanitization($conn, $_POST['field']);
             Decrypt($content, $cipher, $conn, $key, $col_key);
         }
-
     } 
-    // elseif (isset($_POST['key'])) {
-    //     echo "Invalid action.<br>";
-    // }
 
     $conn->close();
 
@@ -154,12 +148,12 @@
         exit();
     }
 
-    Function Encrypt($content, $cipher, $conn, $key, $col_key){
+    function Encrypt($content, $cipher, $conn, $key, $col_key){
         $time = date('Y-m-d H:i:s'); // Current timestamp
 
         if ($cipher == "simple_substitution"){
             $encrypted = simpleSubstitution($content, $key);
-       } else if ($cipher == "double_transposition"){
+        } else if ($cipher == "double_transposition"){
             $encrypted = doubleTransposition($content, $key, $col_key);
         } else if ($cipher == "rc4"){
             $encrypted = RC4($content, $key);
@@ -169,8 +163,9 @@
 
         try {
             // Insert the time, input, and cipher into the database
+            $key_str = $key . ";" . $col_key;
             $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, cipher_key) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $time, $content, $cipher, $key);
+            $stmt->bind_param("ssss", $time, $content, $cipher, $key_str);
             $stmt->execute();
             echo "Data saved successfully!<br>";
         } catch (Exception $e) {
@@ -183,7 +178,7 @@
         _END;
     }
 
-    Function Decrypt($content, $cipher, $conn, $key, $col_key){
+    function Decrypt($content, $cipher, $conn, $key, $col_key){
         $time = date('Y-m-d H:i:s'); // Current timestamp
 
         if ($cipher == "simple_substitution"){
@@ -198,8 +193,9 @@
 
         try {
             // Insert the time, input, and cipher into the database
+            $key_str = $key . ";" . $col_key;
             $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, cipher_key) VALUES (?, ?, ?, ?)");
-            $stmt->bind_param("ssss", $time, $content, $cipher, $key);
+            $stmt->bind_param("ssss", $time, $content, $cipher, $key_str);
             $stmt->execute();
             echo "Data saved successfully! <br>";
         } catch (Exception $e) {
