@@ -167,7 +167,7 @@
             $stmt = $conn->prepare("INSERT INTO cipher_logs (time, input, cipher, cipher_key) VALUES (?, ?, ?, ?)");
             $stmt->bind_param("ssss", $time, $content, $cipher, $key_str);
             $stmt->execute();
-            
+            $stmt->close();
             echo "Data saved successfully!<br>";
         } catch (Exception $e) {
             die(ERROR_MESSAGE);
