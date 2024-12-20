@@ -51,44 +51,29 @@
     $cipher = isset($_POST['cipher']) ? sanitization($conn, $_POST['cipher']) : 'simple_substitution';
 
     // Form to read input and en/decrypt
-    if ($cipher == "double_transposition"){
-        echo <<<_END
-        <form method="post" action="home.php" enctype="multipart/form-data" onsubmit="return validate(this)">
-            <pre>
-            Insert Text: <input type="text" name="field" id="field"> <br>
-            Insert File: <input type="file" name="file" id="file" size="10"> <br>
-            Cipher: $cipher<br>
-                <input type="submit" name="cipher" value="simple_substitution"> <br>
-                <input type="submit" name="cipher" value="double_transposition"> <br>
-                <input type="submit" name="cipher" value="rc4"><br>
-                Insert Key or Row Permutation for Double Transposition Here: <input type="text" name="key" id="key"> <br>
-                Insert Column Permutation for Double Transposition Here: <input type="text" name="col_key" id="col_key"> <br>
-                <input type="submit" name="action" value="Encrypt"> <br>
-                <input type="submit" name="action" value="Decrypt">
-            </pre>
-        </form>
-        _END;
-    }else{
-        echo <<<_END
-        <form method="post" action="home.php" enctype="multipart/form-data" onsubmit="return validate(this)">
-            <pre>
-            Insert Text: <input type="text" name="field" id="field"> <br>
-            Insert File: <input type="file" name="file" id="file" size="10"> <br>
-            Cipher: $cipher<br>
-                <input type="submit" name="cipher" value="simple_substitution"> <br>
-                <input type="submit" name="cipher" value="double_transposition"> <br>
-                <input type="submit" name="cipher" value="rc4"><br>
-                Insert Key Here: <input type="text" name="key" id="key"> <br>
-                <input type="submit" name="action" value="Encrypt"> <br>
-                <input type="submit" name="action" value="Decrypt">
-            </pre>
-        </form>
-        _END;
-    }
+    echo <<<_END
+    <form method="post" action="home.php" enctype="multipart/form-data" onsubmit="return validate(this)">
+        <pre>
+        Insert Text: <input type="text" name="field" id="field"> <br>
+        Insert File: <input type="file" name="file" id="file" size="10"> <br>
+        Cipher: $cipher<br>
+            Cipher: 
+            <select name="cipher" required>
+                <option value="simple_substitution">Simple Substitution</option>
+                <option value="double_transposition">Double Transposition</option>
+                <option value="rc4">RC4</option>
+            </select>
+            Insert Key or Row Permutation for Double Transposition Here: <input type="text" name="key" id="key"> <br>
+            Insert Column Permutation for Double Transposition Here: <input type="text" name="col_key" id="col_key"> <br>
+            <input type="submit" name="action" value="Encrypt"> <br>
+            <input type="submit" name="action" value="Decrypt">
+        </pre>
+    </form>
+    _END;
 
     
     $action = isset($_POST['action']) ? sanitization($conn, $_POST['action']) : '';
-
+    $cipher = isset($_POST['cipher']) ? sanitization($conn, $_POST['cipher']) : '';
     if ($action === "Encrypt") {
         $key = sanitization($conn, $_POST['key']);
         $col_key = isset($_POST['col_key']) ? sanitization($conn, $_POST['col_key']) : '';

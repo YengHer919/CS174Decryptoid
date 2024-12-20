@@ -10,7 +10,7 @@ function validate(form) {
     }
 }
 
-function validateInput(field, file) {
+function validateInput(field, file, cipher) {
     if (field === "" && (!file || file === "")) {
         return "Must have either a text input or a file uploaded.\n";
     }
